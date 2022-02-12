@@ -1,5 +1,8 @@
-from flask import Flask, request, render_template, send_from_directory, redirect
-from functions import search_all_tags, posts_by_tag, update_json_file
+import os.path
+
+from flask import Flask, redirect, render_template, request, send_from_directory
+
+from functions import posts_by_tag, search_all_tags,  update_json_file
 
 POST_PATH = "posts.json"
 UPLOAD_FOLDER = "uploads/images"
@@ -32,12 +35,10 @@ def page_post_create():
     content = request.values.get("content")
     if picture:
         file_name = picture.filename
-        path = "./" + UPLOAD_FOLDER + "/" + file_name
+        path = os.path.join(UPLOAD_FOLDER, file_name)
         picture.save(path)
-        picture_new_url = "/" + UPLOAD_FOLDER + "/" + file_name
-        update_json_file(picture_new_url, content) #После добавления нового поста в жсон файл,
-        # при поиске по тегу на сайте картинка не прогружается, надо,
-        # думаю, сделать какое-нибудь веб хранилище картинок, чтобы работало?
+        picture_new_url = f"/{UPLOAD_FOLDER}/{file_name}"
+        update_json_file(picture_new_url, content)
         return render_template("/post_uploaded.html", picture=picture_new_url, content=content)
     return redirect("/post")
 
@@ -45,6 +46,7 @@ def page_post_create():
 @app.route("/uploads/<path:path>")
 def static_dir(path):
     return send_from_directory("uploads", path)
+
 
 if __name__ == "__main__":
     app.run()
